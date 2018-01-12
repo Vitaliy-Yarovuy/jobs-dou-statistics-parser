@@ -1,8 +1,8 @@
 const parse5 = require('parse5');
 const fs = require('fs');
-const {conditionBuilder, search, getAttr, hasClass} = require('./utils.js');
+const {conditionBuilder, search, getAttr, getText, hasClass} = require('./utils.js');
 const identity = x => x;
-const getText = node => node.childNodes[0].value;
+
 
 let text, doc, items;
 //index
@@ -77,19 +77,36 @@ console.log(vacancies);
 // vacancies rss
 
 
-text = fs.readFileSync('./requests-data/vacancies_epam-systems_feeds.rss', {encoding: 'UTF8'});
-doc = parse5.parse(text);
+text = fs.readFileSync('./requests-data/vacancies_feeds_search.rss', {encoding: 'UTF8'});
+
+text = text
+	.replace(/\<link\>/gi,'<rlink>')
+	.replace(/\<\/link\>/gi,'</rlink>');
+doc = parse5.parseFragment(text);
 
 
 items = search(doc, conditionBuilder('item'));
 
 vacancies = items.map(item => {
 
+	const title = getText(search(item, conditionBuilder('title'))[0]),
+		href = getText(search(item, conditionBuilder('rlink'))[0]) || '',
+		date = new Date(getText(search(item, conditionBuilder('pubDate'))[0])),
+		desc = parse5.serialize(search(item, conditionBuilder('description'))[0]).replace(/\s+/gi,' ').trim(),
+		[company, ,id,] = href.split('/').splice(-4),
+		isHot = false;
+
 	return{
-		date: new Date
+		id,
+		company,
+		title,
+		href,
+		isHot,
+		desc,
+		date
 	}
 
 });
 
 
-console.log(items);
+console.log(vacancies);

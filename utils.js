@@ -5,6 +5,8 @@ const hasClass = ({attrs}, className) => attrs
 	.filter(({name}) => name === 'class')
 	.some(({value}) => value.indexOf(className) !== -1);
 
+const getText = ({childNodes:[child]=[]}={}) => child && child.value;
+
 
 const EMPTYATTR = {name: '', value: ''};
 
@@ -28,6 +30,7 @@ const search = (node, condition) =>
 
 module.exports = {
 	getAttr,
+	getText,
 	hasClass,
 	search,
 	conditionBuilder
